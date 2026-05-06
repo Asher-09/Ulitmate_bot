@@ -19,10 +19,8 @@ EMOJI_ALERT       = "<a:alert:1501586292880707594>"
 EMOJI_OWNER       = "<a:Owner:1501587700879196192>"
 EMOJI_ADMIN       = "<a:Admin:1501587697154654279>"
 EMOJI_MOD         = "<:mod:1501587702984999012>"
-EMOJI_COLOR       = "<:color:1501586914795585697>"   # not used in mod, but kept for completeness
 EMOJI_UP          = "<:up:1501587355419545600>"
 
-# ─── File helpers ──────────────────────
 def load(p):
     try:
         with open(p) as f:
@@ -147,7 +145,6 @@ class Moderation(commands.Cog):
             "timestamp": before.created_at
         }
 
-    # ─── Snipe ─────────────────────────
     async def snipe_logic(self, ctx, channel: discord.TextChannel = None):
         chan = channel or ctx.channel
         data = self.snipe_data.get(chan.id)
@@ -193,7 +190,6 @@ class Moderation(commands.Cog):
     async def slash_editsnipe(self, interaction: discord.Interaction, channel: discord.TextChannel = None):
         await self.editsnipe_logic(interaction, channel)
 
-    # ─── Purge ────────────────────────
     async def purge_logic(self, ctx, amount: int = 0, mode: str = "all", user: discord.Member = None):
         if amount <= 0: amount = 100
         if amount > 500: return await self.send(ctx, error(ctx, "Max 500 messages."))
@@ -229,7 +225,6 @@ class Moderation(commands.Cog):
         if mode is None: mode = "all"
         await self.purge_logic(interaction, amount, mode=mode, user=user)
 
-    # ─── Slowmode ─────────────────────
     async def slowmode_logic(self, ctx, seconds: int):
         if seconds < 0: return await self.send(ctx, error(ctx, "Seconds cannot be negative."))
         await ctx.channel.edit(slowmode_delay=seconds)
@@ -245,8 +240,6 @@ class Moderation(commands.Cog):
     @app_commands.default_permissions(manage_channels=True)
     async def slash_slowmode(self, interaction: discord.Interaction, seconds: int):
         await self.slowmode_logic(interaction, seconds)
-
-    # ─── Lock / Unlock ────────────────
     async def lock_logic(self, ctx, channel: discord.TextChannel = None):
         chan = channel or ctx.channel
         await chan.set_permissions(ctx.guild.default_role, send_messages=False)
@@ -277,7 +270,6 @@ class Moderation(commands.Cog):
     async def slash_unlock(self, interaction: discord.Interaction, channel: discord.TextChannel = None):
         await self.unlock_logic(interaction, channel)
 
-    # ─── Warn System ──────────────────
     async def warn_logic(self, ctx, member: discord.Member, reason: str = "No reason"):
         if not self.can_target(ctx.author, member):
             return await self.send(ctx, error(ctx, "You cannot warn this user."))
@@ -344,7 +336,6 @@ class Moderation(commands.Cog):
     async def slash_clearwarns(self, interaction: discord.Interaction, member: discord.Member):
         await self.clearwarns_logic(interaction, member)
 
-    # ─── Nickname ─────────────────────
     async def nick_logic(self, ctx, member: discord.Member, *, nick: str = None):
         if nick and len(nick) > 32: return await self.send(ctx, error(ctx, "Nickname must be 32 characters or less."))
         await member.edit(nick=nick)
@@ -363,7 +354,6 @@ class Moderation(commands.Cog):
     async def slash_nickname(self, interaction: discord.Interaction, member: discord.Member, nick: str = None):
         await self.nick_logic(interaction, member, nick=nick)
 
-    # ─── Say ──────────────────────────
     async def say_logic(self, ctx, channel: discord.TextChannel, *, text: str):
         await channel.send(text)
         await self.send(ctx, make_embed(ctx, f"{EMOJI_SUCCESS} Sent", f"Message sent to {channel.mention}.", 0x2ecc71))
@@ -378,7 +368,6 @@ class Moderation(commands.Cog):
     async def slash_say(self, interaction: discord.Interaction, channel: discord.TextChannel, text: str):
         await self.say_logic(interaction, channel, text=text)
 
-    # ─── Mute / Unmute ────────────────
     async def mute_logic(self, ctx, member: discord.Member, duration: str, reason: str = "No reason"):
         if not self.can_target(ctx.author, member):
             return await self.send(ctx, error(ctx, "Cannot mute this user."))
@@ -427,7 +416,6 @@ class Moderation(commands.Cog):
     async def slash_unmute(self, interaction: discord.Interaction, member: discord.Member):
         await self.unmute_logic(interaction, member)
 
-    # ─── Kick ─────────────────────────
     async def kick_logic(self, ctx, member: discord.Member, reason: str = "No reason"):
         if not self.can_target(ctx.author, member):
             return await self.send(ctx, error(ctx, "Cannot kick this user."))
@@ -444,7 +432,6 @@ class Moderation(commands.Cog):
     async def slash_kick(self, interaction: discord.Interaction, member: discord.Member, reason: str = "No reason"):
         await self.kick_logic(interaction, member, reason)
 
-    # ─── Ban ──────────────────────────
     async def ban_logic(self, ctx, member: discord.Member, reason: str = "No reason"):
         if not self.can_target(ctx.author, member):
             return await self.send(ctx, error(ctx, "Cannot ban this user."))
@@ -461,7 +448,6 @@ class Moderation(commands.Cog):
     async def slash_ban(self, interaction: discord.Interaction, member: discord.Member, reason: str = "No reason"):
         await self.ban_logic(interaction, member, reason)
 
-    # ─── Jail / Unjail ────────────────
     async def jail_logic(self, ctx, member: discord.Member, reason: str = "No reason"):
         if not self.can_target(ctx.author, member):
             return await self.send(ctx, error(ctx, "Cannot jail this user."))
@@ -524,7 +510,6 @@ class Moderation(commands.Cog):
     async def slash_unjail(self, interaction: discord.Interaction, member: discord.Member):
         await self.unjail_logic(interaction, member)
 
-    # ─── Auto Unmute Loop ─────────────
     @tasks.loop(seconds=30)
     async def check_mutes(self):
         mutes = load("data/mutes.json")
@@ -548,7 +533,6 @@ class Moderation(commands.Cog):
     async def before_check_mutes(self):
         await self.bot.wait_until_ready()
 
-    # ─── Staff Management ─────────────
     async def add_staff_logic(self, ctx, role_type: str, user: discord.Member):
         staff = get_staff()
         if role_type not in ["owners", "admins", "mods"]:
@@ -615,7 +599,6 @@ class Moderation(commands.Cog):
     @app_commands.default_permissions(manage_messages=True)
     async def slash_removemod(self, interaction: discord.Interaction, user: discord.Member): await self.remove_staff_logic(interaction, "mods", user)
 
-    # ─── Staff list ───────────────────
     async def staffs_logic(self, ctx):
         staff = get_staff()
         owners = staff.get("owners", [])

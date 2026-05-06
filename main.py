@@ -4,7 +4,6 @@ import os
 from discord.ext import commands
 from difflib import get_close_matches
 
-# ═══════════════ config ═══════════════
 with open("config.json") as f:
     config = json.load(f)
 
@@ -13,7 +12,6 @@ PREFIX = config["prefix"]
 OWNER_ID = config.get("owner_id")
 GUILD_ID = config.get("guild_id")
 
-# ═══════════════ bot setup ═══════════════
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
@@ -49,9 +47,7 @@ bot = Bot(
     application_id=config.get("application_id")
 )
 
-#             embed helpers
 def error_embed(ctx, title, desc):
-    """Error embed with server author."""
     embed = discord.Embed(
         title=title,
         description=desc,
@@ -64,7 +60,6 @@ def error_embed(ctx, title, desc):
     embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.display_avatar.url)
     return embed
 
-#                         events
 @bot.event
 async def on_ready():
     print(f"{bot.user} is online")
@@ -99,7 +94,7 @@ async def on_command_error(ctx, error):
     elif isinstance(error, commands.MissingRequiredArgument):
         cmd = ctx.command.name if ctx.command else ctx.invoked_with
         await ctx.send(embed=error_embed(ctx,
-            ":wrong: Missing Arguments",
+            "<:wrong:1501538221530808464> Missing Arguments",
             f"Usage: `{PREFIX}{cmd} {ctx.command.signature if ctx.command else ''}`"
         ))
 
@@ -108,6 +103,7 @@ async def on_command_error(ctx, error):
             "<:wrong:1501538221530808464> Permission Denied",
             "You don't have permission to use this command."
         ))
+
     elif isinstance(error, commands.CheckFailure):
         await ctx.send(embed=error_embed(ctx,
             "<:wrong:1501538221530808464> Permissions",
@@ -117,7 +113,7 @@ async def on_command_error(ctx, error):
     elif isinstance(error, commands.BadArgument):
         await ctx.send(embed=error_embed(ctx,
             "<:wrong:1501538221530808464> Invalid Input",
-            "<:wrong:1501538221530808464> Invalid argument type."
+            "Invalid argument type."
         ))
 
     else:

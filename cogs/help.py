@@ -103,7 +103,6 @@ class Help(commands.Cog):
         embed.set_footer(text="Use the dropdown to go back")
         return embed
 
-    # ═══════════════ dropdown ═══════════════
     class HelpDropdown(discord.ui.Select):
         def __init__(self, bot, parent_view):
             self.bot = bot
@@ -129,7 +128,6 @@ class Help(commands.Cog):
             self.cog = cog
             self.add_item(cog.HelpDropdown(bot, self))
 
-    # ═══════════════ help command ═══════════════
     @commands.command(name="help")
     async def help_command(self, ctx, *, query: str = None):
         """Browse all commands or get details for a specific one."""
